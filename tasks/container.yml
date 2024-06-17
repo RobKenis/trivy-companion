@@ -1,0 +1,11 @@
+version: '3'
+
+env:
+  IMAGE_BUILDER: podman
+
+tasks:
+  build:
+    desc: Build the container image
+    cmds:
+    - $IMAGE_BUILDER build -f build/package/Dockerfile .
+    silent: true
