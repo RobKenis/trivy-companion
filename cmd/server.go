@@ -8,6 +8,8 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
+	"github.com/robkenis/trivy-companion/internal/aqua/vulnerabilityreport"
+	"github.com/robkenis/trivy-companion/internal/kubernetes"
 	"github.com/robkenis/trivy-companion/internal/utils"
 )
 
@@ -20,7 +22,18 @@ func main() {
 
 	r := http.NewServeMux()
 
+	client, err := kubernetes.GetClient()
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to create Kubernetes client")
+		panic(err)
+	}
+
+	reports := vulnerabilityreport.NewKubernetesReports(client)
+	handler := vulnerabilityreport.NewHandler(reports)
+
 	r.Handle("GET /", fs)
+
+	r.HandleFunc("GET /vulnerability-reports", handler.GetAll)
 
 	srv := &http.Server{
 		Handler:      r,
